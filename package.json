@@ -1,0 +1,30 @@
+{
+  "name": "maliang-plugin",
+  "version": "0.0.1",
+  "type": "module",
+  "license": "MIT",
+  "dependencies": {
+    "@types/react": "17",
+    "@types/react-dom": "17",
+    "antd": "^5.5.2",
+    "openblocks-cli": "^0.0.24",
+    "openblocks-sdk": "^0.0.40",
+    "react": "17",
+    "react-dom": "17",
+    "typescript": "^5.0.4",
+    "vite": "^4.3.8"
+  },
+  "openblocks": {
+    "description": "",
+    "comps": {
+      "dynamic_form": {
+        "name": "Dynamic Form",
+        "icon": "./icons/hello_world.png"
+      }
+    }
+  },
+  "scripts": {
+    "start": "vite",
+    "build": "openblocks-cli build"
+  }
+}
