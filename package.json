@@ -7,6 +7,7 @@
     "@types/react": "17",
     "@types/react-dom": "17",
     "antd": "^5.5.2",
+    "lodash": "^4.17.21",
     "openblocks-cli": "^0.0.24",
     "openblocks-sdk": "^0.0.40",
     "react": "17",
@@ -26,5 +27,8 @@
   "scripts": {
     "start": "vite",
     "build": "openblocks-cli build"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.195"
   }
 }

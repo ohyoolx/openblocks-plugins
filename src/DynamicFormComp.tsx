@@ -5,17 +5,22 @@ import {
   Section,
   withDefault,
   withExposingConfigs,
-  NumberControl,
   ArrayControl,
-  ObjectControl,
   NameConfig,
   eventHandlerControl,
   withMethodExposing,
+  LabelControl,
+  // SelectInputValidationSection,
+  sectionNames,
+  hiddenPropertyView,
 } from "openblocks-sdk";
+import * as opSdk from "openblocks-sdk";
 import { Form, Space, Input } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 import styles from "./styles.module.css";
+
+console.log("####", opSdk);
 
 const { Button } = antd;
 
@@ -47,6 +52,7 @@ const childrenMap = {
   ),
   // value: withDefault(ArrayControl, []),
   value: numberExposingStateControl("value", []),
+  label: LabelControl,
   fields: withDefault(
     ArrayControl,
     JSON.stringify(
@@ -73,18 +79,24 @@ const childrenMap = {
   ]),
 };
 
-const HelloWorldCompBase = new UICompBuilder(childrenMap, (props: any) => {
+const DynamicFormComp = new UICompBuilder(childrenMap, (props: any) => {
+  // const [validateState, handleValidate] = useSelectInputValidate(props);
+
   const currentValue = props.value;
   const formListFields = props.fields;
   console.log("currentValue formListFields:", currentValue, formListFields);
 
-  return (
-    <div className={styles.wrapper}>
+  return props.label({
+    required: props.required,
+    style: props.style,
+    children: (
       <Form
         name="dynamic_form_nest_item"
         style={{ maxWidth: 600 }}
         autoComplete="off"
-        initialValues={{ dynamic_form_list: (currentValue || []).length > 0 ? currentValue : [{}] }}
+        initialValues={{
+          dynamic_form_list: (currentValue || []).length > 0 ? currentValue : [{}],
+        }}
         onValuesChange={(changedFields: any, allFields: any) => {
           console.log("###changedFields, allFields:", changedFields, allFields);
           props.value.onChange(allFields);
@@ -122,25 +134,32 @@ const HelloWorldCompBase = new UICompBuilder(childrenMap, (props: any) => {
           )}
         </Form.List>
       </Form>
-    </div>
-  );
+    ),
+    // ...validateState,
+  });
 })
   .setPropertyViewFn((children: any) => {
-    console.log("####children", children);
+    // console.log("####children", children);
     // 属性面板
     return (
       <>
-        <Section name="基本">
+        <Section name={sectionNames.basic}>
           {children.value.propertyView({ label: "初始值" })}
           {children.fields.propertyView({ label: "字段" })}
         </Section>
+        {/* 标签 */}
+        {children.label.getPropertyView()}
         <Section name="Interaction">{children.onEvent.propertyView()}</Section>
+        {/* 校验 */}
+        {/* <SelectInputValidationSection {...children} /> */}
+        {/* 布局 */}
+        <Section name={sectionNames.layout}>{hiddenPropertyView(children)}</Section>
       </>
     );
   })
   .build();
 
-const HelloWorldCompTemp = withMethodExposing(HelloWorldCompBase, [
+const HelloWorldCompTemp = withMethodExposing(DynamicFormComp, [
   {
     method: {
       name: "random",
