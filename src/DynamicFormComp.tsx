@@ -1,7 +1,5 @@
 import {
-  antd,
   UICompBuilder,
-  numberExposingStateControl,
   Section,
   withDefault,
   withExposingConfigs,
@@ -10,19 +8,24 @@ import {
   eventHandlerControl,
   withMethodExposing,
   LabelControl,
+  StringControl,
+  BoolCodeControl,
+  JSONObjectArrayControl,
+  jsonObjectExposingStateControl,
   // SelectInputValidationSection,
+  disabledPropertyView,
   sectionNames,
   hiddenPropertyView,
+  placeholderPropertyView,
 } from "openblocks-sdk";
 import * as opSdk from "openblocks-sdk";
-import { Form, Space, Input } from "antd";
+import { Form, Space, Input, Button } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 import styles from "./styles.module.css";
+import { useEffect } from "react";
 
 console.log("####", opSdk);
-
-const { Button } = antd;
 
 interface IField {
   lable: string;
@@ -31,45 +34,28 @@ interface IField {
   required?: boolean;
 }
 
+const initialFields = JSON.stringify(
+  [
+    {
+      lable: "字典code",
+      name: "dict_code",
+    },
+    {
+      lable: "字典名",
+      name: "dict_name",
+    },
+  ],
+  null,
+  2
+);
+
 const childrenMap = {
-  // value: numberExposingStateControl("value", 100),
-  initialValue: withDefault(
-    ArrayControl,
-    JSON.stringify(
-      [
-        {
-          dict_code: "dict11",
-          dict_name: "字典字典11",
-        },
-        {
-          dict_code: "dict22",
-          dict_name: "字典字典22",
-        },
-      ],
-      null,
-      2
-    )
-  ),
-  // value: withDefault(ArrayControl, []),
-  value: numberExposingStateControl("value", []),
+  value: JSONObjectArrayControl, // value 看下来现在并没有符合要求的类型（xxxExposingStateControl）；只用来展示的话JSONObjectArrayControl是可以的
+  // value: jsonObjectExposingStateControl("value",{}),
   label: LabelControl,
-  fields: withDefault(
-    ArrayControl,
-    JSON.stringify(
-      [
-        {
-          lable: "字典code",
-          name: "dict_code",
-        },
-        {
-          lable: "字典名",
-          name: "dict_name",
-        },
-      ],
-      null,
-      2
-    )
-  ),
+  placeholder: StringControl,
+  disabled: BoolCodeControl,
+  fields: withDefault(ArrayControl, initialFields),
   onEvent: eventHandlerControl([
     {
       label: "onChange",
@@ -86,11 +72,18 @@ const DynamicFormComp = new UICompBuilder(childrenMap, (props: any) => {
   const formListFields = props.fields;
   console.log("currentValue formListFields:", currentValue, formListFields);
 
+  const [form] = Form.useForm();
+
+  useEffect(() => {
+    form.resetFields();
+  }, [currentValue]);
+
   return props.label({
     required: props.required,
     style: props.style,
     children: (
       <Form
+        form={form}
         name="dynamic_form_nest_item"
         style={{ maxWidth: 600 }}
         autoComplete="off"
@@ -99,9 +92,11 @@ const DynamicFormComp = new UICompBuilder(childrenMap, (props: any) => {
         }}
         onValuesChange={(changedFields: any, allFields: any) => {
           console.log("###changedFields, allFields:", changedFields, allFields);
-          props.value.onChange(allFields);
-          props.onEvent("change");
+          // TODO 更新值的方法失效了
+          // props.value.onChange(allFields);
+          // props.onEvent("change");
         }}
+        disabled={props.disabled}
       >
         <Form.List name="dynamic_form_list">
           {(fields: { [x: string]: any; key: any; name: any }[], { add, remove }: any) => (
@@ -139,17 +134,22 @@ const DynamicFormComp = new UICompBuilder(childrenMap, (props: any) => {
   });
 })
   .setPropertyViewFn((children: any) => {
-    // console.log("####children", children);
+    console.log("####children", children);
     // 属性面板
     return (
       <>
         <Section name={sectionNames.basic}>
-          {children.value.propertyView({ label: "初始值" })}
           {children.fields.propertyView({ label: "字段" })}
+          {children.value.propertyView({ label: "默认值" })}
+          {placeholderPropertyView(children)}
         </Section>
         {/* 标签 */}
         {children.label.getPropertyView()}
-        <Section name="Interaction">{children.onEvent.propertyView()}</Section>
+        {/* 交互 */}
+        <Section name={sectionNames.interaction}>
+          {children.onEvent.propertyView()}
+          {disabledPropertyView(children)}
+        </Section>
         {/* 校验 */}
         {/* <SelectInputValidationSection {...children} /> */}
         {/* 布局 */}
