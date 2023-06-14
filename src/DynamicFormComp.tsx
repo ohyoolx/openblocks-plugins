@@ -50,8 +50,8 @@ const initialFields = JSON.stringify(
 );
 
 const childrenMap = {
-  value: JSONObjectArrayControl, // value 看下来现在并没有符合要求的类型（xxxExposingStateControl）；只用来展示的话JSONObjectArrayControl是可以的
-  // value: jsonObjectExposingStateControl("value",{}),
+  // value: JSONObjectArrayControl, // value 看下来现在并没有符合要求的类型（xxxExposingStateControl）；只用来展示的话JSONObjectArrayControl是可以的
+  value: jsonObjectExposingStateControl("value",{}),
   label: LabelControl,
   placeholder: StringControl,
   disabled: BoolCodeControl,
@@ -75,7 +75,7 @@ const DynamicFormComp = new UICompBuilder(childrenMap, (props: any) => {
   const [form] = Form.useForm();
 
   useEffect(() => {
-    form.resetFields();
+    form.setFieldsValue(currentValue.value)
   }, [currentValue]);
 
   return props.label({
@@ -91,10 +91,9 @@ const DynamicFormComp = new UICompBuilder(childrenMap, (props: any) => {
           dynamic_form_list: (currentValue || []).length > 0 ? currentValue : [{}],
         }}
         onValuesChange={(changedFields: any, allFields: any) => {
-          console.log("###changedFields, allFields:", changedFields, allFields);
-          // TODO 更新值的方法失效了
-          // props.value.onChange(allFields);
-          // props.onEvent("change");
+          // console.log("###changedFields, allFields:", changedFields, allFields);
+          props.value.onChange(allFields);
+          props.onEvent("change");
         }}
         disabled={props.disabled}
       >
@@ -134,7 +133,7 @@ const DynamicFormComp = new UICompBuilder(childrenMap, (props: any) => {
   });
 })
   .setPropertyViewFn((children: any) => {
-    console.log("####children", children);
+    // console.log("####children", children);
     // 属性面板
     return (
       <>
