@@ -19,8 +19,9 @@ import {
   placeholderPropertyView,
 } from "openblocks-sdk";
 import * as opSdk from "openblocks-sdk";
-import { Form, Space, Input, Button } from "antd";
+import { Form, Space, Input, Button, Select } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
+import { FormListControl } from "./components/controls/formListControl";
 
 import styles from "./styles.module.css";
 import { useEffect } from "react";
@@ -28,7 +29,7 @@ import { useEffect } from "react";
 console.log("####", opSdk);
 
 interface IField {
-  lable: string;
+  label: string;
   name: string;
   type: "input" | "select";
   required?: boolean;
@@ -37,11 +38,11 @@ interface IField {
 const initialFields = JSON.stringify(
   [
     {
-      lable: "字典code",
+      label: "字典code",
       name: "dict_code",
     },
     {
-      lable: "字典名",
+      label: "字典名",
       name: "dict_name",
     },
   ],
@@ -51,11 +52,12 @@ const initialFields = JSON.stringify(
 
 const childrenMap = {
   // value: JSONObjectArrayControl, // value 看下来现在并没有符合要求的类型（xxxExposingStateControl）；只用来展示的话JSONObjectArrayControl是可以的
-  value: jsonObjectExposingStateControl("value",{}),
+  value: jsonObjectExposingStateControl("value", {}),
   label: LabelControl,
   placeholder: StringControl,
   disabled: BoolCodeControl,
   fields: withDefault(ArrayControl, initialFields),
+  options: FormListControl,
   onEvent: eventHandlerControl([
     {
       label: "onChange",
@@ -69,13 +71,13 @@ const DynamicFormComp = new UICompBuilder(childrenMap, (props: any) => {
   // const [validateState, handleValidate] = useSelectInputValidate(props);
 
   const currentValue = props.value;
-  const formListFields = props.fields;
+  const formListFields = props.options;
   console.log("currentValue formListFields:", currentValue, formListFields);
 
   const [form] = Form.useForm();
 
   useEffect(() => {
-    form.setFieldsValue(currentValue.value)
+    form.setFieldsValue(currentValue.value);
   }, [currentValue]);
 
   return props.label({
@@ -109,11 +111,25 @@ const DynamicFormComp = new UICompBuilder(childrenMap, (props: any) => {
                       name={[name, field.name]}
                       rules={
                         field.required
-                          ? [{ required: true, message: `${field.lable}是必填项` }]
+                          ? [{ required: true, message: `${field.label}是必填项` }]
                           : []
                       }
                     >
-                      <Input placeholder={field.lable} />
+                      {field.type === "input" ? (
+                        <Input placeholder={field.label} style={{ minWidth: 120 }} />
+                      ) : null}
+                      {field.type === "select" ? (
+                        <Select
+                          options={[
+                            { value: "jack", label: "Jack" },
+                            { value: "lucy", label: "Lucy" },
+                            { value: "Yiminghe", label: "yiminghe" },
+                            { value: "disabled", label: "Disabled", disabled: true },
+                          ]}
+                          placeholder={field.label}
+                          style={{ minWidth: 120 }}
+                        />
+                      ) : null}
                     </Form.Item>
                   ))}
                   <MinusCircleOutlined onClick={() => remove(name)} />
@@ -141,6 +157,7 @@ const DynamicFormComp = new UICompBuilder(childrenMap, (props: any) => {
           {children.fields.propertyView({ label: "字段" })}
           {children.value.propertyView({ label: "默认值" })}
           {placeholderPropertyView(children)}
+          {children.options.propertyView({})}
         </Section>
         {/* 标签 */}
         {children.label.getPropertyView()}
