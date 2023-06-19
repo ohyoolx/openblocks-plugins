@@ -4,7 +4,7 @@ import {
   hiddenPropertyView,
   MultiCompBuilder,
   StringControl,
-  IconControl,
+  JSONObjectArrayControl,
   BoolCodeControl,
   OptionCompProperty,
   dropdownControl,
@@ -35,6 +35,7 @@ let SelectOption = new MultiCompBuilder(
     label: StringControl,
     value: StringControl,
     type: dropdownControl(DisplayTypeOptions, "input"), // 展示类型
+    options: JSONObjectArrayControl, // 如果展示控件是select 对应的options
     disabled: BoolCodeControl,
     hidden: BoolCodeControl,
   },
@@ -55,6 +56,12 @@ SelectOption = class extends SelectOption implements OptionCompProperty {
         })}
         {/* {this.children.value.propertyView({ label: "值" })} */}
         {this.children.type.propertyView({ label: "展示组件" })}
+        {this.children.type.getView() === "select" &&
+          this.children.options.propertyView({
+            label: "选项值",
+            tooltip:
+              "请输入包含label和value键值对的对象组成的数组，例如：[{label: 'aaa', value: 1}, {label: 'bbb', value: 2}]",
+          })}
         {disabledPropertyView(this.children)}
         {hiddenPropertyView(this.children)}
       </>
@@ -68,8 +75,8 @@ export const FormListControl = optionsControl(SelectOption, {
   //     { label: trans("optionsControl.optionI", { i: 2 }), value: "2" },
   //   ],
   initOptions: [
-    { label: "字典code", name: "dict_code", value: 1, type: "input" },
-    { label: "字典name", name: "dict_name", value: 2, type: "select" },
+    { label: "字段1", name: "name1", type: "input" },
+    { label: "字段2", name: "name2", type: "select" },
   ],
-  uniqField: "value",
+  uniqField: "name",
 });

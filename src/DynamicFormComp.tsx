@@ -33,6 +33,7 @@ interface IField {
   name: string;
   type: "input" | "select";
   required?: boolean;
+  options: any[];
 }
 
 const initialFields = JSON.stringify(
@@ -54,9 +55,7 @@ const childrenMap = {
   // value: JSONObjectArrayControl, // value 看下来现在并没有符合要求的类型（xxxExposingStateControl）；只用来展示的话JSONObjectArrayControl是可以的
   value: jsonObjectExposingStateControl("value", {}),
   label: LabelControl,
-  placeholder: StringControl,
   disabled: BoolCodeControl,
-  fields: withDefault(ArrayControl, initialFields),
   options: FormListControl,
   onEvent: eventHandlerControl([
     {
@@ -120,12 +119,14 @@ const DynamicFormComp = new UICompBuilder(childrenMap, (props: any) => {
                       ) : null}
                       {field.type === "select" ? (
                         <Select
-                          options={[
-                            { value: "jack", label: "Jack" },
-                            { value: "lucy", label: "Lucy" },
-                            { value: "Yiminghe", label: "yiminghe" },
-                            { value: "disabled", label: "Disabled", disabled: true },
-                          ]}
+                          options={
+                            (field.options || []).length > 0
+                              ? field.options
+                              : [
+                                  { value: "1", label: "选项1" },
+                                  { value: "2", label: "选项2" },
+                                ]
+                          }
                           placeholder={field.label}
                           style={{ minWidth: 120 }}
                         />
@@ -154,10 +155,8 @@ const DynamicFormComp = new UICompBuilder(childrenMap, (props: any) => {
     return (
       <>
         <Section name={sectionNames.basic}>
-          {children.fields.propertyView({ label: "字段" })}
-          {children.value.propertyView({ label: "默认值" })}
-          {placeholderPropertyView(children)}
           {children.options.propertyView({})}
+          {children.value.propertyView({ label: "默认值" })}
         </Section>
         {/* 标签 */}
         {children.label.getPropertyView()}
@@ -187,7 +186,4 @@ const HelloWorldCompTemp = withMethodExposing(DynamicFormComp, [
   },
 ]);
 
-export default withExposingConfigs(HelloWorldCompTemp, [
-  new NameConfig("value", ""),
-  new NameConfig("fields", ""),
-]);
+export default withExposingConfigs(HelloWorldCompTemp, [new NameConfig("value", "")]);
